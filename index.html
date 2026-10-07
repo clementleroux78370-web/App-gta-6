@@ -377,5 +377,43 @@ fr.onload=function(){var im=new Image();im.onerror=function(){fin("Impossible de
 im.onload=function(){var c=document.createElement("canvas"),s=Math.min(im.width,im.height),z=256;c.width=c.height=z;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,z,z);fin("",c.toDataURL("image/jpeg",.82))};
 im.src=fr.result};fr.readAsDataURL(f)});
 </script>
+<script>
+function nx(){var n=Date.now(),h=36e5;return{ch:{gen:[{id:"s1",by:"Sam",x:1,st:4,t:"Bienvenue à tous, installez-vous !",ts:n-h*5},{id:"s2",by:"Lina",x:1,st:3,t:"Quelqu'un a déjà testé la course de nuit ?",ts:n-h*3}],deb:[{id:"s3",by:"Théo",x:0,st:1,t:"Je débute, par quelle mission commencer ?",ts:n-h*8},{id:"s4",by:"Nora",x:1,st:3,t:"Commence par le braquage de la banque, tout est expliqué dans l'onglet Missions.",ts:n-h*7}],ast:[{id:"s5",by:"Lina",x:1,st:3,t:"Le raccourci du port change tout sur la course de nuit.",ts:n-h*2}]},dn:{},rp:{},th:"auto",last:0}}
+var EXK="complice-proto-extra",EX=nx(),exl=false,RM=[["gen","Général","Discute de tout ce qui touche au jeu.","#FF2E88"],["deb","Débutants","Pose tes premières questions, sans pression.","#19E3D8"],["ast","Astuces et missions","Partage ce qui marche.","#FF8A3D"]];
+try{var d0=JSON.parse(localStorage.getItem(EXK)||"null");if(d0&&d0.ch){EX=Object.assign(nx(),d0);exl=true}}catch(e){}
+S.rm=null;
+snap=function(){return JSON.stringify({u:S.u,lk:S.lk,rp:S.rp,ok:S.ok,F:F,V:V,Q:Q,up:S.up,EX:EX})};
+function apt(){var t=EX.th;if(t=="light"||t=="dark")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme")}
+function tm(t){var d=new Date(t),s=(Date.now()-t)/6e4;if(s<1)return "à l'instant";if(s<60)return "il y a "+Math.floor(s)+" min";return d.toDateString()==new Date().toDateString()?d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}
+function msgh(m){var me_=m.by=="Toi";if(EX.rp[m.id])return '<p class="mute" style="text-align:center">Message signalé. Un modérateur va le vérifier.</p>';
+return '<div class="bub '+(me_?'u':'a')+'" style="max-width:92%">'+(me_?'':who(m.by,m.x,m.st)+'<br>')+'<span style="display:block;margin-top:4px;word-break:break-word">'+esc(m.t)+'</span><span style="font-size:12px;opacity:.75">'+tm(m.ts)+'</span><button class="act" data-a="'+(me_?'mdel':'mrp')+'" data-id="'+m.id+'" style="font-size:12px;padding:0 0 0 10px;'+(me_?'color:#fff':'')+'">'+(me_?'Supprimer':'Signaler')+'</button></div>'}
+function vS(){if(!S.rm)return RM.map(function(r){var l=EX.ch[r[0]].slice(-1)[0];return '<button class="card mission" data-a="ro" data-id="'+r[0]+'" style="border-left:8px solid '+r[3]+'"><div><h3>'+r[1]+'</h3><p class="mute" style="margin:0">'+r[2]+'</p>'+(l?'<p style="margin:6px 0 0;font-size:14px"><b>'+esc(l.by=="Toi"?(S.u.p||"Toi"):l.by)+' :</b> '+esc(l.t.slice(0,60))+(l.t.length>60?'…':'')+'</p>':'')+'</div><span class="go">›</span></button>'}).join('')+'<div class="note">Aperçu : les messages sont enregistrés sur cet appareil. Les échanges entre joueurs arriveront avec le serveur.</div>';
+var r=RM.filter(function(x){return x[0]==S.rm})[0];
+return '<button class="act" data-a="rb" style="padding:0 0 10px">‹ Salons</button><h3 style="font-size:20px">'+r[1]+'</h3><p class="mute">'+r[2]+'</p><div>'+EX.ch[S.rm].map(msgh).join('')+'</div>'+(S.er?'<p class="err" role="alert">'+S.er+'</p>':'')+'<input type="text" id="mi" placeholder="Écris un message" maxlength="500" autocomplete="off"><button class="btn" data-a="msg" style="width:100%">Envoyer</button>'}
+function vC(){return '<div class="pad"><h2>Communauté</h2><div class="seg">'+[["f","Fil"],["q","Questions"],["v","Vidéos"],["s","Salons"]].map(function(x){return '<button class="'+(S.cs==x[0]?'on':'')+'" data-a="cs" data-id="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>'+(S.cs=="f"?vF():S.cs=="v"?vV():S.cs=="s"?vS():Q.map(function(q){return qc(q,1)}).join(''))+'</div>'}
+function pts(){var n=0,c=0;F.forEach(function(p){if(p.by=="Toi")n+=10;(p.cm||[]).forEach(function(k){if(k.by=="Toi")n+=3})});V.forEach(function(v){if(v.by=="Toi")n+=15});Object.keys(EX.ch).forEach(function(k){EX.ch[k].forEach(function(m){if(m.by=="Toi"&&!EX.rp[m.id])c++})});n+=Math.min(c,30);n+=Object.keys(EX.dn).filter(function(k){return EX.dn[k]}).length*20;return n+S.up.length*5}
+var D0=vD;vD=function(){var m=M[S.mid-1];return D0().replace('<div class="seg">','<p style="margin:12px 0 0"><button class="btn alt" data-a="dn" data-id="'+m.id+'">'+(EX.dn[m.id]?'Mission terminée ✓':'Marquer comme terminée')+'</button></p><div class="seg">')};
+var ML0=mlist;mlist=function(){var h=ML0();M.forEach(function(m){if(EX.dn[m.id])h=h.replace('<h3>'+esc(m.t)+'</h3>','<h3>'+esc(m.t)+' ✓</h3>')});return h};
+var P4=vP;vP=function(){var h=P4();if(S.ed)return h;var p=pts(),i=0,ms=0;LV.forEach(function(l,k){if(p>=l[2])i=k});var nt=LV[i+1],dn=Object.keys(EX.dn).filter(function(k){return EX.dn[k]}).length;Object.keys(EX.ch).forEach(function(k){EX.ch[k].forEach(function(m){if(m.by=="Toi")ms++})});
+var rank='<h3>Rang : '+LV[i][0]+'</h3><div class="stars"><b>'+stars(i+1)+'</b>'+stars(4-i)+'</div><p class="mute">'+p+(nt?' / '+nt[2]+' points pour devenir '+nt[0]:' points, niveau maximum')+'</p><div class="bar"><i style="width:'+(nt?Math.round((p-LV[i][2])/(nt[2]-LV[i][2])*100):100)+'%"></i></div><p class="mute" style="margin:8px 0 0">Missions terminées : '+dn+' / '+M.length+'</p>';
+var B=[["Premier pas",p>0],["Bavard",ms>=5],["Explorateur",dn>=1],["Utile",p>=50],["Expert",p>=700],["Parrain",false]];
+var th='<div class="card"><h3>Apparence</h3>'+[["auto","Auto"],["light","Clair"],["dark","Sombre"]].map(function(t){return '<button class="chip'+(EX.th==t[0]?' on':'')+'" data-a="th" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
+return h.replace('<h3>Rang : Novice</h3><div class="stars"><b>★</b>★★★★</div><p class="mute">34 / 100 points pour devenir Initié</p><div class="bar"><i style="width:34%"></i></div>',rank).replace('+10 quand ta réponse est votée · +25 quand elle résout une question · +15 pour une vidéo utile · +5 par ami parrainé','Publication +10 · Commentaire +3 · Vidéo +15 · Mission terminée +20 · Repère sur la carte +5 · Message dans un salon +1 (30 au maximum)').replace(/<h3>Badges<\/h3>[\s\S]*?(?=<\/div>)/,'<h3>Badges</h3>'+B.map(function(b){return '<span class="tag badge'+(b[1]?' got':'')+'">'+b[0]+'</span> '}).join('')).replace('<div class="card"><h3>Gagner des points</h3>',th+'<div class="card"><h3>Gagner des points</h3>')};
+function send(){var t=val("mi").trim();S.er="";if(!t)return;if(Date.now()-EX.last<1500){S.er="Doucement, attends un instant avant d'envoyer un autre message.";return}EX.last=Date.now();EX.ch[S.rm].push({id:"m"+Date.now()+Math.floor(Math.random()*999),by:"Toi",x:0,st:1,t:t.slice(0,500),ts:Date.now()})}
+document.addEventListener("keydown",function(e){if(e.key=="Enter"&&e.target.id=="mi"){e.preventDefault();var b=document.querySelector('[data-a="msg"]');if(b)b.click()}});
+document.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(!b)return;var a=b.dataset.a,id=b.dataset.id,ph=document.getElementById("ph"),y=ph.scrollTop,bt=0;
+if(a=="del2"){EX=nx();return}
+if(["ro","rb","msg","mdel","mrp","dn","th"].indexOf(a)<0)return;e.stopPropagation();
+if(a=="ro"){S.rm=id;S.er="";bt=1}else if(a=="rb"){S.rm=null;S.er="";y=0}
+else if(a=="msg"){send();bt=1}
+else if(a=="mdel")EX.ch[S.rm]=EX.ch[S.rm].filter(function(m){return m.id!=id});
+else if(a=="mrp")EX.rp[id]=1;
+else if(a=="dn")EX.dn[id]=!EX.dn[id];
+else EX.th=id;
+R();ph.scrollTop=bt?ph.scrollHeight:y},true);
+(function(){var R8=R;R=function(){R8();apt();try{if(S.ob!=null)localStorage.removeItem(EXK);else localStorage.setItem(EXK,JSON.stringify(EX))}catch(e){}};
+var n=0,t=setInterval(function(){n++;if(DB.ok){clearInterval(t);if(!exl)DB.ref.get().then(function(sn){try{if(sn.exists){var x=JSON.parse(sn.data().s);if(x.EX&&x.EX.ch){EX=Object.assign(nx(),x.EX);R()}}}catch(e){}})}else if(n>16)clearInterval(t)},500);
+R()})();
+</script>
 </body>
 </html>
