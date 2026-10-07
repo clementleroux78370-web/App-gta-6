@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Diagnostic Complice</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:640px;margin:0 auto;padding:20px;background:#fff;color:#1b0b33}h1{font-size:22px}.r{border:2px solid #ddd;border-radius:12px;padding:12px 14px;margin:10px 0}.ok{border-color:#1a9f6e;background:#eafaf3}.ko{border-color:#e0245e;background:#fff0f4}.w{border-color:#e0a800;background:#fff9e5}b{display:block}small{color:#444;font-size:15px}</style></head>
+<body><h1>Diagnostic de l'appli</h1><p>Cette page vérifie chaque étape et te dit quoi corriger. Envoie-moi une capture d'écran du résultat si tu as un doute.</p><div id="o"></div>
+<script>
+var o=document.getElementById("o");
+function add(c,t,d){var e=document.createElement("div");e.className="r "+c;e.innerHTML="<b>"+(c=="ok"?"✓ ":c=="ko"?"✗ ":"! ")+t+"</b><small>"+(d||"")+"</small>";o.appendChild(e)}
+function txt(u){return fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():Promise.reject(r.status)})}
+(async function(){
+var cfg=null;
+try{var c=await txt("config.js");
+ var m=c.match(/url\s*:\s*["']([^"']*)["']/),k=c.match(/key\s*:\s*["']([^"']*)["']/);
+ var u=m?m[1].trim():"",key=k?k[1].trim():"";
+ if(!u&&!key)add("ko","config.js est vide","Les guillemets de url et key ne contiennent rien. Ouvre config.js, colle l'adresse du projet et la clé, enregistre, puis renvoie-le sur GitHub.");
+ else if(!u)add("ko","L'adresse du projet manque dans config.js","Il faut aussi la « Project URL » (https://xxxx.supabase.co), pas seulement la clé.");
+ else if(!key)add("ko","La clé manque dans config.js","Colle la clé « anon » ou « publishable » entre les guillemets après key:.");
+ else if(/service_role/i.test(key)||key.indexOf("sb_secret")==0)add("ko","Clé secrète détectée dans config.js","Retire-la tout de suite de GitHub, remplace-la par la clé « anon » ou « publishable », et régénère la clé secrète dans Supabase.");
+ else if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(u))add("w","L'adresse a un format inhabituel","Elle devrait ressembler à https://xxxx.supabase.co, sans rien après .co. Adresse lue : "+u);
+ else{add("ok","config.js est rempli","Adresse : "+u+" · clé : "+key.slice(0,8)+"…");cfg={u:u.replace(/\/$/,""),k:key}}
+}catch(e){add("ko","config.js est introuvable (erreur "+e+")","Le fichier n'est pas à la racine du dépôt GitHub, ou son nom est faux (vérifie qu'il ne s'appelle pas config.js.txt). Renvoie-le à côté de index.html.")}
+try{var h=await txt("index.html");
+ if(h.indexOf("complice-sb-session")>-1&&h.indexOf("config.js")>-1)add("ok","index.html est la nouvelle version","Il contient le code de connexion au serveur.");
+ else add("ko","index.html est encore l'ancienne version","C'est la cause la plus fréquente. Renvoie le nouvel index.html (Ajouter un fichier, Télécharger des fichiers), puis attends 2 minutes.")
+}catch(e){add("ko","index.html est introuvable","Erreur "+e)}
+if(cfg){
+ try{var r=await fetch(cfg.u+"/auth/v1/settings",{headers:{apikey:cfg.k}});
+  if(r.ok){var s=await r.json();add(s.external&&s.external.email===false?"w":"ok","Le projet Supabase répond et la clé est valide",s.external&&s.external.email===false?"Attention : la connexion par e-mail est désactivée (Authentication, Sign In / Providers).":"Connexion par e-mail activée"+(s.mailer_autoconfirm?", sans confirmation d'e-mail.":", avec confirmation d'e-mail : il faudra cliquer sur le lien reçu."))}
+  else add("ko","Supabase refuse la clé (erreur "+r.status+")","La clé est mal copiée ou n'appartient pas à ce projet. Recopie-la en entier depuis Project Settings, API Keys.")
+ }catch(e){add("ko","Impossible de joindre l'adresse du projet","Vérifie l'adresse dans config.js, et que le projet n'est pas en pause dans Supabase.")}
+ try{var q=await fetch(cfg.u+"/rest/v1/rooms?select=id",{headers:{apikey:cfg.k}});
+  if(q.ok)add("ok","La base de données est prête","Les tables du script existent.");
+  else{var j=await q.json().catch(function(){return{}});add("ko","Les tables n'existent pas ou sont inaccessibles ("+q.status+")","Lance le script supabase-setup.sql dans SQL Editor. "+(j.message||""))}
+ }catch(e){add("ko","Test de la base impossible",String(e))}
+}
+add("w","Si tout est vert mais que l'appli reste identique","Ouvre le site en navigation privée ou fais Ctrl+F5 : ton navigateur garde peut-être l'ancienne page en mémoire.");
+})();
+</script></body></html>
